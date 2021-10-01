@@ -1,0 +1,98 @@
+# This is the configuration for Porter
+# You must define steps for each action, but the rest is optional
+# See https://porter.sh/author-bundles for documentation on how to configure your bundle
+# Uncomment out the sections below to take full advantage of what Porter can do!
+
+name: keda-http-addon
+version: 0.1.0
+description: "An example Porter configuration"
+registry: kedahttpaddon
+
+# If you want to customize the Dockerfile in use, uncomment the line below and update the referenced file. 
+# See https://porter.sh/custom-dockerfile/
+#dockerfile: Dockerfile.tmpl
+
+mixins:
+  - exec
+  - helm3:
+      clientVersion: v3.6.3
+      repositories:
+        kedacore:
+          url: "https://kedacore.github.io/charts"
+
+install:
+  - helm3:
+      description: "Install KEDA"
+      name: "{{ installation.name }}"
+      chart: kedacore/keda
+      version: v2.4.0
+      namespace: "{{ bundle.parameters.namespace }}"
+      set:
+        crds.install: "{{ bundle.parameters.keda-install-crds }}"
+  - helm3:
+      description: "Install the KEDA HTTP Addon"
+      name: "{{ installation.name }}"
+      chart: kedacore/keda-add-ons-http
+      version: v0.0.2
+      namespace: "{{ bundle.parameters.namespace }}"
+      set:
+        crds.install: "{{ bundle.parameters.keda-http-install-crds }}"
+
+upgrade:
+  - helm3:
+      description: "Install KEDA"
+      name: "{{ installation.name }}"
+      chart: kedacore/keda
+      version: v2.4.0
+      namespace: "{{ bundle.parameters.namespace }}"
+      set:
+        crds.install: "{{ bundle.parameters.keda-install-crds }}"
+  - helm3:
+      description: "Install the KEDA HTTP Addon"
+      name: "{{ installation.name }}"
+      chart: ./charts/keda-http-addon
+      version: v0.0.2
+      namespace: "{{ bundle.parameters.namespace }}"
+      set:
+        crds.install: "{{ bundle.parameters.keda-http-install-crds }}"
+
+
+uninstall:
+  - helm3:
+      description: "Install KEDA"
+      name: "{{ installation.name }}"
+      chart: kedacore/keda
+      version: v2.4.0
+      namespace: "{{ bundle.parameters.namespace }}"
+      set:
+        crds.install: "{{ bundle.parameters.keda-install-crds }}"
+  - helm3:
+      description: "Install the KEDA HTTP Addon"
+      name: "{{ installation.name }}"
+      chart: ./charts/keda-http-addon
+      version: v0.0.2
+      namespace: "{{ bundle.parameters.namespace }}"
+      set:
+        crds.install: "{{ bundle.parameters.keda-http-install-crds }}"
+
+# Below is an example of how to define credentials
+# See https://porter.sh/author-bundles/#credentials
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+# Below is an example of how to define parameters
+# See https://porter.sh/author-bundles/#parameters
+parameters:
+  - name: namespace
+    type: string
+    default: keda-http-addon
+    description: "The namespace to install the HTTP Addon to"
+  - name: keda-install-crds
+    type: boolean
+    default: true
+    description: "Whether to install CustomResourceDefinitions for KEDA"
+  - name: keda-http-install-crds
+    type: boolean
+    default: true
+    description: "Whether to install CustomResourceDefinitions for KEDA HTTP Addon"
