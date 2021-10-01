@@ -33,7 +33,7 @@ install:
       description: "Install the KEDA HTTP Addon"
       name: "{{ installation.name }}"
       chart: kedacore/keda-add-ons-http
-      version: v0.0.2
+      version: v0.0.1
       namespace: "{{ bundle.parameters.namespace }}"
       set:
         crds.install: "{{ bundle.parameters.keda-http-install-crds }}"
